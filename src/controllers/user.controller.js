@@ -200,4 +200,6 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, { accessToken, refreshToken }));
 });
 
+export const updateUser = asyncHandler((req, res) => {});
+
 export { registerUser, loginUser };
