@@ -220,7 +220,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-  return res.status(200).json(new ApiResponse(200, "Current user fetched"));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req?.user, "Current user fetched"));
 });
 
 const updateUser = asyncHandler(async (req, res) => {
@@ -243,7 +245,8 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 const uploadAvatar = asyncHandler(async (req, res) => {
-  const avatarLocalPath = req?.files?.avatar?.[0]?.path; // Files path got by help of multer
+  console.log(req?.file);
+  const avatarLocalPath = req?.file?.path; // Files path got by help of multer
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
@@ -267,15 +270,15 @@ const uploadAvatar = asyncHandler(async (req, res) => {
 });
 
 const uploadUserCoverImg = asyncHandler(async (req, res) => {
-  const userCoverImgLocalPath = req?.files?.avatar?.[0]?.path; // Files path got by help of multer
+  const userCoverImgLocalPath = req?.file?.path; // This files path got by help of multer
   if (!userCoverImgLocalPath) {
-    throw new ApiError(400, "Avatar file is required");
+    throw new ApiError(400, "CoverImg file is required");
   }
 
   const avatar = await uploadOnCloudinary(userCoverImgLocalPath);
 
   if (!avatar?.url) {
-    throw new ApiError(400, "Avatar file upload failed");
+    throw new ApiError(400, "CoverImg file upload failed");
   }
   const user = await User.findByIdAndUpdate(
     req.user?._id,
@@ -292,17 +295,20 @@ const uploadUserCoverImg = asyncHandler(async (req, res) => {
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
-  if (!username) {
-    throw new ApiError(404, "Username is missing");
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "username is missing");
   }
 
-  const user = User.aggregate([
+  const channel = await User.aggregate([
     {
-      $match: { username: username?.toLowerCase() },
+      $match: {
+        username: username?.toLowerCase(),
+      },
     },
     {
       $lookup: {
-        from: "subscription",
+        from: "subscriptions",
         localField: "_id",
         foreignField: "channel",
         as: "subscribers",
@@ -318,7 +324,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
     {
       $addFields: {
-        subscriberCount: {
+        subscribersCount: {
           $size: "$subscribers",
         },
         channelsSubscribedToCount: {
@@ -326,7 +332,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         },
         isSubscribed: {
           $cond: {
-            if: { $in: [req.user?._id, "subscribers.subscriber"] },
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
             then: true,
             else: false,
           },
@@ -347,8 +353,6 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log(user);
-
   if (!channel?.length) {
     throw new ApiError(404, "channel does not exists");
   }
@@ -356,7 +360,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, channel[0], "user channel fetched successfully")
+      new ApiResponse(200, channel[0], "User channel fetched successfully")
     );
 });
 
