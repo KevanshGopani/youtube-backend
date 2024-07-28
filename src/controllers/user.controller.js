@@ -77,7 +77,6 @@ const registerUser = asyncHandler(async (req, res) => {
       "Internal server error while creating user in database"
     );
   }
-  console.table(createdUser);
   // Send success response
   return res.status(201).json(
     new ApiResponse(
@@ -245,7 +244,6 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 const uploadAvatar = asyncHandler(async (req, res) => {
-  console.log(req?.file);
   const avatarLocalPath = req?.file?.path; // Files path got by help of multer
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
