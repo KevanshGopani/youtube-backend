@@ -7,8 +7,25 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  console.log(req.query);
+  const { page = 1, limit = 2, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
+  const skip = (page - 1) * limit;
+  const allVideos = await Video.find()
+    .sort({ [sortBy]: sortType === "des" ? -1 : 1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalVideos = await Video.countDocuments();
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        201,
+        { allVideos, totalVideos },
+        "All videos are successfully fetched"
+      )
+    );
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -69,20 +86,52 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   //TODO: get video by id
+  if (!videoId) {
+    throw new ApiError(404, "Video id not found");
+  }
+
+  const video = await Video.findById(videoId).populate("owner");
+  if (!video) {
+    throw new ApiError(401, "Video not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(201, video, "Here is you video details"));
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+  const { like, title, description, thumbnail } = req.body;
   //TODO: update video details like title, description, thumbnail
+  console.log(req?.files);
+  const thumbnailLocalPath = req?.files?.thumbnail?.[0]?.path;
+  console.log(thumbnailLocalPath);
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: delete video
+  const deletedVideo = await Video.findByIdAndDelete(videoId);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deletedVideo, "Video deleted successfully"));
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
+
+  const { isPublished } = req.body;
+
+  const video = await Video.findByIdAndUpdate(
+    videoId,
+    {
+      isPublished: isPublished,
+    },
+    { new: true }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video status updated"));
 });
 
 export {
