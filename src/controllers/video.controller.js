@@ -102,8 +102,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 const updateVideo = asyncHandler(async (req, res) => {
   let query = {};
   const { videoId } = req.params;
-  const { views, title, description, thumbnail } = req.body;
-  //TODO: update video details like title, description, thumbnail
+  const { views, title, description } = req.body;
   const thumbnailLocalPath = req?.file?.path;
   if (thumbnailLocalPath) {
     const updatedThumbnail = await uploadOnCloudinary(thumbnailLocalPath);
@@ -141,9 +140,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-
   const { isPublished } = req.body;
-
   const video = await Video.findByIdAndUpdate(
     videoId,
     {
