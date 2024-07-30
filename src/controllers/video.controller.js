@@ -7,7 +7,6 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const getAllVideos = asyncHandler(async (req, res) => {
-  console.log(req.query);
   const { page = 1, limit = 2, query, sortBy, sortType, userId } = req.query;
   //TODO: get all videos based on query, sort, pagination
   const skip = (page - 1) * limit;
@@ -101,12 +100,35 @@ const getVideoById = asyncHandler(async (req, res) => {
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
+  let query = {};
   const { videoId } = req.params;
-  const { like, title, description, thumbnail } = req.body;
+  const { views, title, description, thumbnail } = req.body;
   //TODO: update video details like title, description, thumbnail
-  console.log(req?.files);
-  const thumbnailLocalPath = req?.files?.thumbnail?.[0]?.path;
-  console.log(thumbnailLocalPath);
+  const thumbnailLocalPath = req?.file?.path;
+  if (thumbnailLocalPath) {
+    const updatedThumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+    query.thumbnail = updatedThumbnail?.url;
+  }
+
+  if (views) {
+    query.views = views;
+  }
+
+  if (title) {
+    query.title = title;
+  }
+
+  if (description) {
+    query.description = description;
+  }
+
+  const updateVideo = await Video.findByIdAndUpdate(videoId, query, {
+    new: true,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateVideo, "Video updated successfully"));
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
