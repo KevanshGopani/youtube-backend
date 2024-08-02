@@ -63,11 +63,38 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
+
+  const addVideoIntoPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $push: {
+        videos: videoId,
+      },
+    },
+    { new: true }
+  );
+  console.log(addVideoIntoPlaylist);
+  return res
+    .status(200)
+    .json(new ApiResponse(201, addVideoIntoPlaylist, "Success"));
 });
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
   // TODO: remove video from playlist
+  if (!playlistId || !videoId) {
+    throw new ApiError(400, "Playlist ID and Video ID are required");
+  }
+
+  const updatedPlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $pull: { videos: videoId },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(new ApiResponse(201, updatedPlaylist, "Success"));
 });
 
 const deletePlaylist = asyncHandler(async (req, res) => {
