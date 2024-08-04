@@ -2,6 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const likeSchema = new mongoose.Schema(
   {
+    likedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     video: {
       type: Schema.Types.ObjectId,
       ref: "Video",
@@ -13,10 +17,6 @@ const likeSchema = new mongoose.Schema(
     tweet: {
       type: Schema.Types.ObjectId,
       ref: "Tweet",
-    },
-    likedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
     },
   },
   { timestamps: true }

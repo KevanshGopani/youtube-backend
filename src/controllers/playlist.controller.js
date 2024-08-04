@@ -73,7 +73,6 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     },
     { new: true }
   );
-  console.log(addVideoIntoPlaylist);
   return res
     .status(200)
     .json(new ApiResponse(201, addVideoIntoPlaylist, "Success"));
