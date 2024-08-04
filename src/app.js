@@ -33,11 +33,15 @@ import userRouter from "./routes/user.routes.js";
 import videoRoutes from "./routes/video.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
+import tweetRoutes from "./routes/tweet.routes.js";
+import likeRoutes from "./routes/like.routes.js";
 
 //Routes declaration
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/video", videoRoutes);
 app.use("/api/v1/comment", commentRoutes);
 app.use("/api/v1/playlist", playlistRoutes);
+app.use("/api/v1/tweet", tweetRoutes);
+app.use("/api/v1/like", likeRoutes);
 
 export { app };
